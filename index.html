@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
   :root {
+    color-scheme: light dark;
     --bg: #f1f2f5;
     --surface: #ffffff;
     --surface-2: #f7f8fa;
@@ -118,12 +119,16 @@
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
   }
-  .top-inner { display: flex; align-items: center; gap: 18px; height: 60px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: -.01em; white-space: nowrap; flex: none; }
-  @media (max-width: 900px){ .brand .txt { display: none; } }
+  .top-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: -.01em; white-space: nowrap; flex: none; margin-right: auto; }
+  @media (max-width: 600px){ .brand .txt { display: none; } }
   .brand .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); flex: none; }
-  nav.tabs { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+  .icon-btn { flex: none; width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 15px; display: grid; place-items: center; line-height: 1; }
+  .icon-btn:hover { background: var(--surface-3); color: var(--text); }
+  nav.tabs { order: 10; flex-basis: 100%; display: flex; align-items: center; gap: 4px; margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
   nav.tabs::-webkit-scrollbar { display: none; }
+  .tab-group-lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-left: 8px; white-space: nowrap; display: inline-flex; align-items: center; gap: 10px; }
+  .tab-group-lbl::before { content: ""; width: 1px; height: 16px; background: var(--border); }
   .tab {
     border: none; background: none; color: var(--text-2);
     padding: 8px 13px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
@@ -200,7 +205,9 @@
     padding: 16px; text-align: left; display: flex; flex-direction: column; gap: 11px;
     box-shadow: var(--shadow); transition: transform .12s ease, border-color .12s ease, box-shadow .12s;
     min-height: 132px; position: relative; width: 100%;
+    color: var(--text); font-family: var(--font-body);
   }
+  .card h4 { color: var(--text); }
   .card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
   .card.add { align-items: center; justify-content: center; border-style: dashed; background: var(--surface-2); color: var(--text-2); font-weight: 600; min-height: 132px; gap: 8px; }
   .card.add:hover { color: var(--accent); border-color: var(--accent); }
@@ -325,6 +332,23 @@
 
   .field-lab { font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block; }
 
+  /* per-idea comments */
+  .idea-comments { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .ic-head { font-weight: 600; font-size: 14px; margin-bottom: 12px; }
+  .ic-count { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; }
+  .ic-list { display: flex; flex-direction: column; gap: 13px; margin-bottom: 14px; }
+  .ic-empty { font-size: 13px; color: var(--muted); }
+  .ic-item { display: flex; gap: 10px; }
+  .ic-item .av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; font-family: var(--font-mono); flex: none; }
+  .ic-body { flex: 1; min-width: 0; }
+  .ic-meta { display: flex; align-items: center; gap: 9px; }
+  .ic-who { font-weight: 600; font-size: 13px; color: var(--text); }
+  .ic-when { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+  .ic-del { border: none; background: none; color: var(--muted); font-size: 11px; margin-left: auto; }
+  .ic-del:hover { color: #d64545; }
+  .ic-text { font-size: 14px; color: var(--text); white-space: pre-wrap; margin-top: 2px; word-break: break-word; }
+  .ic-compose { display: flex; flex-direction: column; gap: 8px; }
+
   /* name gate */
   .gate .modal { max-width: 460px; }
   .gate .mbody p { color: var(--text-2); font-size: 14px; margin: 0 0 16px; }
@@ -346,19 +370,22 @@
 <header class="top">
   <div class="wrap top-inner">
     <div class="brand"><span class="dot"></span> <span class="txt">Roadmap Board</span></div>
-    <nav class="tabs" id="tabs">
-      <button class="tab" data-view="intro" aria-selected="true">Intro</button>
-      <button class="tab" data-view="ideas">Ideeën <span class="cnt" id="c-ideas"></span></button>
-      <button class="tab" data-view="priority">Prioriteit</button>
-      <button class="tab" data-view="timeline">Tijdlijn</button>
-      <button class="tab" data-view="focus">Focus <span class="cnt" id="c-focus"></span></button>
-      <button class="tab" data-view="ferry">Ferry &amp; Linear <span class="cnt" id="c-ferry"></span></button>
-    </nav>
     <span class="conn" id="conn" hidden><span class="d"></span><span id="conn-txt">verbinden…</span></span>
+    <button class="icon-btn" id="theme-toggle" title="Licht / donker thema" aria-label="Wissel licht of donker thema">🌙</button>
     <div class="me-chip" id="me-chip" title="Klik om je naam te wijzigen">
       <span>ingelogd als</span> <b id="me-name">…</b>
       <span class="av" id="me-av"></span>
     </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab" data-view="intro" aria-selected="true">Intro</button>
+      <span class="tab-group-lbl" title="Hier lever je zelf input">Invullen</span>
+      <button class="tab" data-view="ideas">Ideeën <span class="cnt" id="c-ideas"></span></button>
+      <button class="tab" data-view="focus">Focus <span class="cnt" id="c-focus"></span></button>
+      <button class="tab" data-view="ferry">Ferry &amp; Linear <span class="cnt" id="c-ferry"></span></button>
+      <span class="tab-group-lbl" title="Hier zie je alles wat iedereen samen inbracht">Overzicht</span>
+      <button class="tab" data-view="priority">Prioriteit</button>
+      <button class="tab" data-view="timeline">Tijdlijn</button>
+    </nav>
   </div>
 </header>
 
@@ -566,6 +593,7 @@
   var scoreDocs = new Map(); // participantId -> {name, scores:{}, timeline:{}}
   var focusItems = [];
   var ferryItems = [];
+  var comments = []; // per-idea comments: {id, ideaId, text, author, pid, createdAt}
   var myScores = { scores:{}, timeline:{} }; // convenience mirror
   var currentView = "intro";
   var openIdeaId = null;
@@ -749,7 +777,8 @@
       var v = a.avg[c.key];
       html += '<span class="mini"><span class="d" style="background:var('+c.cvar+'); opacity:'+(v? (0.35+0.13*v):0.18)+'"></span>'+(v? v.toFixed(1):'–')+'</span>';
     });
-    html += '</div><span class="voters">'+(a.voters? a.voters+'✓' : '')+'</span></div>';
+    var cc = commentCount(i.id);
+    html += '</div><span class="voters">'+(a.voters? a.voters+'✓' : '')+(cc? ' &nbsp;💬'+cc : '')+'</span></div>';
     card.innerHTML = html;
     if(scoredByMe){ var f=el("div","doneflag"); f.textContent="✓"; f.title="Jij hebt dit gescoord"; card.appendChild(f); }
     card.addEventListener("click", function(){ openIdeaModal(i.id); });
@@ -859,6 +888,20 @@
     });
   }
   function upCount(p){ return p.up? Object.keys(p.up).length : 0; }
+  function commentCount(id){ var n=0; for(var i=0;i<comments.length;i++) if(comments[i].ideaId===id) n++; return n; }
+  function renderIdeaComments(id){
+    var list = document.getElementById("ic-list"); if(!list) return;
+    var items = comments.filter(function(c){ return c.ideaId===id; }).sort(function(a,b){ return (a.createdAt||0)-(b.createdAt||0); });
+    var cnt = document.getElementById("ic-count"); if(cnt) cnt.textContent = "("+items.length+")";
+    if(!items.length){ list.innerHTML = '<div class="ic-empty">Nog geen opmerkingen — begin de discussie.</div>'; return; }
+    list.innerHTML = items.map(function(c){
+      var mineC = c.pid===me.id;
+      return '<div class="ic-item"><span class="av" style="background:'+colorFor(c.author)+'">'+esc(initials(c.author))+'</span>'+
+        '<div class="ic-body"><div class="ic-meta"><span class="ic-who">'+esc(c.author||"?")+'</span><span class="ic-when">'+esc(timeAgo(c.createdAt))+'</span>'+
+        (mineC? '<button class="ic-del" data-delc="'+esc(c.id)+'">verwijderen</button>':'')+'</div>'+
+        '<div class="ic-text">'+esc(c.text)+'</div></div></div>';
+    }).join("");
+  }
 
   // ---------- modal: idea detail ----------
   function openIdeaModal(id){
@@ -899,6 +942,11 @@
         '<button class="btn ghost sm" id="m-edit">✎ Bewerken</button>'+
         '<button class="btn ghost sm" id="m-delete" style="color:#d64545;border-color:#d64545;">Verwijderen</button></div>';
     }
+    // comments (everyone can leave and read comments per idea)
+    html += '<div class="idea-comments"><div class="ic-head">Opmerkingen <span class="ic-count" id="ic-count"></span></div>'+
+      '<div class="ic-list" id="ic-list"></div>'+
+      '<div class="ic-compose"><textarea id="ic-input" rows="2" placeholder="Laat een opmerking of vraag achter voor de anderen…"></textarea>'+
+      '<button class="btn sm" id="ic-post" style="align-self:flex-start;">Plaats opmerking</button></div></div>';
     html += '<div class="m-actions"><span class="savestatus" id="m-savestatus"></span><button class="btn" id="m-done">Klaar</button></div>';
     html += '</div>';
     m.innerHTML = html;
@@ -938,6 +986,17 @@
     });
     var done = $("#m-done");
     if(done) done.addEventListener("click", function(){ flushSave(); toast(db ? "Opgeslagen ✓" : "Bewaard (lokaal)"); closeModal(); });
+
+    // comments
+    renderIdeaComments(id);
+    var icPost = $("#ic-post");
+    if(icPost) icPost.addEventListener("click", function(){
+      var inp = document.getElementById("ic-input"); var txt = (inp.value||"").trim(); if(!txt) return;
+      var cid = "c-"+uid();
+      var body = { ideaId:id, text:txt, author:me.name, pid:me.id, createdAt:Date.now() };
+      if(db){ db.doc("idea_comments/"+cid).set(body).then(function(){ inp.value=""; }).catch(function(e){ alert("Mislukt: "+e.message); }); }
+      else { body.id=cid; comments.push(body); inp.value=""; renderIdeaComments(id); renderIdeas(); }
+    });
 
     // initial save status
     var hasMine = (mine && CRITERIA.some(function(c){ return mine[c.key]>0; })) || !!myScores.timeline[id];
@@ -983,8 +1042,15 @@
         pid: isEdit ? (existing.pid || me.id) : me.id,
         createdAt: isEdit ? (existing.createdAt || Date.now()) : Date.now()
       };
-      if(db){ db.doc("ideas/"+idv).set(body).then(function(){ toast(isEdit?"Bijgewerkt ✓":"Toegevoegd ✓"); closeModal(); }).catch(function(e){ alert("Opslaan mislukt: "+e.message); }); }
-      else { body.id=idv; ideas.set(idv, body); renderAll(); closeModal(); }
+      function afterSave(){
+        if(isEdit){ closeModal(); return; }
+        // new idea: keep locally and jump straight into scoring it
+        ideas.set(idv, Object.assign({ id:idv }, body));
+        renderIdeas(); renderIntro();
+        openIdeaModal(idv);
+      }
+      if(db){ db.doc("ideas/"+idv).set(body).then(function(){ toast(isEdit?"Bijgewerkt ✓":"Toegevoegd — geef 'm nu een score"); afterSave(); }).catch(function(e){ alert("Opslaan mislukt: "+e.message); }); }
+      else { body.id=idv; ideas.set(idv, body); renderAll(); afterSave(); }
     });
     openOverlay("#overlay");
     setTimeout(function(){ var t=$("#ni-title"); if(t){ t.focus(); if(isEdit) t.setSelectionRange(t.value.length, t.value.length); } }, 40);
@@ -1030,6 +1096,14 @@
       if(!confirm("Verwijderen?")) return;
       if(db) db.doc(kind+"/"+did).delete();
       else { if(kind==="focus") focusItems=focusItems.filter(function(x){return x.id!==did;}); else ferryItems=ferryItems.filter(function(x){return x.id!==did;}); renderFeed(kind); }
+      return;
+    }
+    var delc = e.target.closest && e.target.closest("[data-delc]");
+    if(delc){
+      var cid = delc.getAttribute("data-delc");
+      if(!confirm("Opmerking verwijderen?")) return;
+      if(db) db.doc("idea_comments/"+cid).delete();
+      else { comments = comments.filter(function(x){ return x.id!==cid; }); if(openIdeaId) renderIdeaComments(openIdeaId); renderIdeas(); }
     }
   });
 
@@ -1206,6 +1280,36 @@
       ferryItems = snap.docs.filter(function(d){return d.exists;}).map(function(d){ var v=d.data()||{}; v.id=d.id; return v; });
       renderFeed("ferry"); $("#c-ferry").textContent=ferryItems.length||"";
     }, function(err){ console.warn(err); });
+
+    db.collection("idea_comments").onSnapshot(function(snap){
+      comments = snap.docs.filter(function(d){return d.exists;}).map(function(d){ var v=d.data()||{}; v.id=d.id; return v; });
+      if(openIdeaId && $("#overlay").classList.contains("open")) renderIdeaComments(openIdeaId);
+      renderIdeas(); // refresh comment counts on cards
+    }, function(err){ console.warn(err); });
+  }
+
+  // ---------- theme (light / dark toggle, persisted) ----------
+  var LS_THEME = "fl_roadmap_theme";
+  function currentTheme(){
+    var cur = document.documentElement.getAttribute("data-theme");
+    if(cur === "light" || cur === "dark") return cur;
+    return (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  function setTheme(t){
+    document.documentElement.setAttribute("data-theme", t);
+    document.documentElement.style.colorScheme = t;
+    var btn = $("#theme-toggle"); if(btn) btn.textContent = (t === "dark") ? "☀️" : "🌙";
+  }
+  function initTheme(){
+    var stored = null; try { stored = localStorage.getItem(LS_THEME); } catch(e){}
+    if(stored === "light" || stored === "dark") setTheme(stored);
+    else { var b=$("#theme-toggle"); if(b) b.textContent = currentTheme()==="dark" ? "☀️" : "🌙"; }
+    var btn = $("#theme-toggle");
+    if(btn) btn.addEventListener("click", function(){
+      var next = currentTheme()==="dark" ? "light" : "dark";
+      try { localStorage.setItem(LS_THEME, next); } catch(e){}
+      setTheme(next);
+    });
   }
 
   var started = false;
@@ -1216,6 +1320,7 @@
   }
 
   function boot(){
+    initTheme();
     // restore me
     try { var raw=localStorage.getItem(LS); if(raw) me=JSON.parse(raw); } catch(e){}
     if(me && me.name){ setMe(me.name); }
