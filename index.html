@@ -568,7 +568,8 @@
     { id:"seed-logistiek",       theme:"platform", title:"Interne logistiek", description:"Materiaal- en goederenstromen op locatie ondersteunen.", sub:[] },
     { id:"seed-office",          theme:"platform", title:"Fastlane Office", description:"Interne tooling / werkplek voor het Fastlane-team.", sub:[] }
   ];
-  var SEED_VERSION = 2;
+  var SEED_VERSION = 3;
+  var SEED_OWNER = "Killian"; // de basis-ideeën staan op naam van Killian (kan ze bewerken/verwijderen)
 
   var PALETTE = ["#4436d6","#0e8fd6","#1a9e5b","#9b3fe0","#e07a12","#d6455f","#2aa39a","#c0842a"];
 
@@ -585,6 +586,8 @@
   function themeById(id){ for(var i=0;i<THEMES.length;i++) if(THEMES[i].id===id) return THEMES[i]; return THEMES[THEMES.length-1]; }
   function cvar(v){ return getComputedStyle(document.body).getPropertyValue(v).trim() || v; }
   function uid(){ return (Date.now().toString(36) + Math.random().toString(36).slice(2,8)); }
+  // ownership: the person who added it (by browser id) OR anyone logged in under the same name
+  function isMine(i){ if(!i||!me) return false; return (i.pid && i.pid===me.id) || (i.addedBy && i.addedBy===me.name); }
 
   // ---------- state ----------
   var db = null;
@@ -766,7 +769,7 @@
     var scoredByMe = myScores.scores[i.id] && CRITERIA.some(function(c){ return myScores.scores[i.id][c.key]>0; });
     var html = "";
     if(i.addedBy){
-      var mineIdea = i.pid && i.pid===me.id;
+      var mineIdea = isMine(i);
       html += '<span class="'+(mineIdea?'badge-mine':'badge-new')+'" style="align-self:flex-start;">'+(mineIdea? '✎ door jou · bewerkbaar' : 'toegevoegd door '+esc(i.addedBy))+'</span>';
     }
     html += '<h4>'+esc(i.title)+'</h4>';
@@ -936,8 +939,8 @@
     BUCKETS.forEach(function(b){ html += '<button data-b="'+b.key+'" aria-pressed="'+(curB===b.key?"true":"false")+'">'+esc(b.label)+'</button>'; });
     html += '</div></div>';
 
-    // owner actions (only user-added, by adder): edit + delete
-    if(i.pid && i.pid===me.id){
+    // owner actions (adder by id, or anyone logged in under the same name): edit + delete
+    if(isMine(i)){
       html += '<div class="m-owner-actions"><span class="mono" style="font-size:11px;color:var(--muted);">Jouw idee</span>'+
         '<button class="btn ghost sm" id="m-edit">✎ Bewerken</button>'+
         '<button class="btn ghost sm" id="m-delete" style="color:#d64545;border-color:#d64545;">Verwijderen</button></div>';
@@ -1009,8 +1012,8 @@
   function openIdeaEditor(themeId, existing){
     var m = $("#modal");
     var isEdit = !!existing;
-    // only the adder may edit; guard defensively
-    if(isEdit && !(existing.pid && existing.pid===me.id)){ openIdeaModal(existing.id); return; }
+    // only the owner (adder by id, or same name) may edit; guard defensively
+    if(isEdit && !isMine(existing)){ openIdeaModal(existing.id); return; }
     var curTheme = isEdit ? existing.theme : themeId;
     var opts = THEMES.map(function(t){ return '<option value="'+t.id+'"'+(t.id===curTheme?' selected':'')+'>'+esc(t.name)+'</option>'; }).join("");
     var subStr = (isEdit && existing.sub && existing.sub.length) ? existing.sub.join(", ") : "";
@@ -1237,16 +1240,16 @@
       if(!snap.exists){
         // first ever open: create all seed ideas
         var writes = SEED_IDEAS.map(function(s, idx){
-          return db.doc("ideas/"+s.id).set({ title:s.title, description:s.description, theme:s.theme, sub:s.sub||[], seeded:true, createdAt: idx });
+          return db.doc("ideas/"+s.id).set({ title:s.title, description:s.description, theme:s.theme, sub:s.sub||[], seeded:true, createdAt: idx, addedBy: SEED_OWNER, pid: "owner-"+SEED_OWNER });
         });
         return Promise.all(writes).then(function(){ return db.doc("meta/config").set({ seeded:true, seedVersion:SEED_VERSION, seededAt:Date.now() }); });
       }
       var data = snap.data() || {};
       if(data.seedVersion === SEED_VERSION) return;
-      // migration: re-apply theme/title/description on EXISTING seed docs only
+      // migration: re-apply fields on EXISTING seed docs only, and attribute them to the owner
       // (update() rejects on missing docs, so deleted seeds are not resurrected)
       var ups = SEED_IDEAS.map(function(s){
-        return db.doc("ideas/"+s.id).update({ theme:s.theme, title:s.title, description:s.description, sub:s.sub||[], seeded:true }).catch(function(){});
+        return db.doc("ideas/"+s.id).update({ theme:s.theme, title:s.title, description:s.description, sub:s.sub||[], seeded:true, addedBy: SEED_OWNER, pid: "owner-"+SEED_OWNER }).catch(function(){});
       });
       return Promise.all(ups).then(function(){ return db.doc("meta/config").update({ seedVersion:SEED_VERSION }); });
     });
