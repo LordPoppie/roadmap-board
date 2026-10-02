@@ -1,0 +1,456 @@
+<title>Fastlane Roadmap Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg:#f7f9f9; --surface:#fff; --surface-2:#f1f4f9; --surface-3:#e7ecf4;
+    --border:#e2e7ef; --border-strong:#cbd4e3;
+    --text:#0f2549; --text-2:#45526d; --muted:#6b7280;
+    --accent:#446dff; --accent-2:#2e55e6; --accent-soft:#d9e4ff; --accent-contrast:#fff;
+    --t-ticketing:#4f46e5; --t-cashless:#059669; --t-backoffice:#7c3aed; --t-crew:#d97706; --t-data:#e11d48; --t-platform:#0891b2;
+    --good:#1a9e5b; --warn:#d97706;
+    --shadow:0 1px 2px rgba(15,37,73,.06),0 8px 22px -14px rgba(15,37,73,.25);
+    --shadow-lg:0 20px 50px -22px rgba(15,37,73,.4);
+    --radius:13px; --radius-sm:9px;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#0a1a34; --surface:#0f2549; --surface-2:#16305a; --surface-3:#1e3a68;
+    --border:#274169; --border-strong:#3a5590;
+    --text:#eaf1ff; --text-2:#aebfdd; --muted:#8291ae;
+    --accent:#6d8cff; --accent-2:#93aaff; --accent-soft:#1b2f5c; --accent-contrast:#fff;
+    --t-ticketing:#8b83ff; --t-cashless:#34d399; --t-backoffice:#b794f6; --t-crew:#f0a54a; --t-data:#fb7199; --t-platform:#38bdf8;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px -16px rgba(0,0,0,.7); --shadow-lg:0 26px 60px -26px rgba(0,0,0,.8);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0a1a34; --surface:#0f2549; --surface-2:#16305a; --surface-3:#1e3a68;
+    --border:#274169; --border-strong:#3a5590;
+    --text:#eaf1ff; --text-2:#aebfdd; --muted:#8291ae;
+    --accent:#6d8cff; --accent-2:#93aaff; --accent-soft:#1b2f5c; --accent-contrast:#fff;
+    --t-ticketing:#8b83ff; --t-cashless:#34d399; --t-backoffice:#b794f6; --t-crew:#f0a54a; --t-data:#fb7199; --t-platform:#38bdf8;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px -16px rgba(0,0,0,.7); --shadow-lg:0 26px 60px -26px rgba(0,0,0,.8);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.02em;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:var(--accent);}
+  .wrap{padding:18px 22px 44px;}
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .tile{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:900;font-size:17px;flex:none;box-shadow:0 0 0 4px var(--accent-soft);}
+  .brand h1{font-size:18px;}
+  .brand .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:1px;}
+  .top .spacer{flex:1;}
+  .navlink{font-size:12.5px;text-decoration:none;color:var(--text-2);border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:6px 12px;white-space:nowrap;}
+  .navlink:hover{background:var(--surface-3);}
+  .conn{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;padding:5px 11px;border-radius:999px;border:1px solid var(--border);color:var(--text-2);white-space:nowrap;}
+  .conn .d{width:8px;height:8px;border-radius:50%;background:var(--muted);}
+  .conn.live{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,var(--border));}
+  .conn.live .d{background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 25%,transparent);}
+  .conn.local{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--border));}
+  .conn.local .d{background:var(--warn);}
+  .me-chip{display:flex;align-items:center;gap:8px;padding:5px 6px 5px 11px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:12.5px;color:var(--text-2);white-space:nowrap;}
+  .me-chip b{color:var(--text);font-weight:600;}
+  .me-chip .av{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#fff;font-family:var(--mono);}
+  .icon-btn{flex:none;width:32px;height:32px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:14px;display:grid;place-items:center;}
+  .icon-btn:hover{background:var(--surface-3);color:var(--text);}
+  .intro{color:var(--text-2);font-size:13px;margin:10px 0 14px;max-width:96ch;}
+  .intro b{color:var(--text);}
+
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:12px;}
+  .bar input[type=text]{flex:1;min-width:200px;font-family:inherit;font-size:14px;color:var(--text);background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:9px 12px;}
+  .bar input:focus,.bar select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .bar select{font-family:inherit;font-size:13.5px;color:var(--text);background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:9px 10px;}
+  .btn{border:none;background:var(--accent);color:var(--accent-contrast);font-weight:700;font-size:13.5px;padding:9px 16px;border-radius:var(--radius-sm);}
+  .btn:hover{background:var(--accent-2);}
+  .btn.ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border-strong);font-weight:600;}
+  .btn.ghost:hover{background:var(--surface-3);}
+  .btn.sm{padding:7px 12px;font-size:12.5px;}
+  .legend{display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin-left:auto;}
+  .legend .li{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-2);}
+  .legend .dot{width:9px;height:9px;border-radius:3px;}
+  .banner{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid var(--warn);color:var(--text);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:14px;}
+
+  .scroller{overflow-x:auto;padding-bottom:12px;}
+  .timeline{display:flex;gap:16px;align-items:flex-start;min-width:min-content;}
+  .qgroup{flex:none;}
+  .qhead{display:flex;align-items:baseline;gap:8px;padding:0 2px 9px;border-bottom:2px solid var(--accent);margin-bottom:12px;}
+  .qhead .q{font-size:15px;font-weight:800;}
+  .qhead .qn{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .qgroup.park .qhead{border-bottom-color:var(--border-strong);}
+  .months{display:flex;gap:12px;align-items:flex-start;}
+  .col{flex:none;width:224px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;}
+  .col.wide{width:248px;}
+  .col>.ch{display:flex;align-items:center;gap:7px;margin-bottom:9px;padding:0 2px;}
+  .col>.ch .m{font-weight:700;font-size:13.5px;text-transform:capitalize;}
+  .col>.ch .cnt{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}
+  .col .drop{display:flex;flex-direction:column;gap:8px;min-height:60px;flex:1;border-radius:8px;padding:2px;}
+  .col.drag-over .drop{outline:2px dashed var(--accent);outline-offset:-2px;background:var(--accent-soft);}
+
+  .card{position:relative;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--tc,var(--muted));border-radius:var(--radius-sm);padding:9px 46px 9px 11px;box-shadow:var(--shadow);cursor:grab;font-size:13px;line-height:1.35;color:var(--text);}
+  .card:active{cursor:grabbing;}
+  .card.dragging{opacity:.45;}
+  .card .t{font-weight:600;word-break:break-word;}
+  .card .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px;}
+  .card .th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .card .by{font-size:10.5px;color:var(--muted);}
+  .card .by b{color:var(--text-2);font-weight:600;}
+  .card .acts{position:absolute;top:5px;right:5px;display:flex;gap:1px;opacity:0;transition:opacity .12s;}
+  .card:hover .acts,.card:focus-within .acts{opacity:1;}
+  .card .acts button{border:none;background:none;color:var(--muted);font-size:13px;line-height:1;width:20px;height:20px;border-radius:5px;display:grid;place-items:center;}
+  .card .acts button:hover{background:var(--surface-3);color:var(--text);}
+  .card .acts .del:hover{color:#e5484d;}
+  .prop-chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text-2);border-radius:999px;padding:2px 8px;cursor:pointer;}
+  .prop-chip.has{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  .card .propose{font-size:10.5px;font-weight:600;color:var(--accent);border:1px dashed color-mix(in srgb,var(--accent) 50%,var(--border));background:transparent;border-radius:999px;padding:2px 8px;}
+  .card .propose:hover{background:var(--accent-soft);}
+
+  .hint{font-size:12px;color:var(--muted);margin-top:14px;font-style:italic;max-width:96ch;}
+
+  /* modals */
+  .overlay{position:fixed;inset:0;z-index:60;background:rgba(10,20,40,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+  .overlay[hidden]{display:none;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:460px;padding:20px 22px 18px;}
+  .modal h3{font-size:17px;margin-bottom:4px;}
+  .modal .msub{color:var(--muted);font-size:12.5px;margin-bottom:12px;}
+  .modal .lbl{display:block;font-weight:600;font-size:12px;color:var(--text-2);margin:12px 0 5px;}
+  .modal input[type=text],.modal select,.modal textarea{width:100%;font-family:inherit;font-size:14px;color:var(--text);background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:9px 11px;}
+  .modal textarea{resize:vertical;line-height:1.5;}
+  .modal input:focus,.modal select:focus,.modal textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .modal-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+  .gate .modal{max-width:420px;}
+
+  .prop-list{display:flex;flex-direction:column;gap:10px;margin-top:4px;max-height:50vh;overflow-y:auto;}
+  .prop{border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 12px;background:var(--surface-2);}
+  .prop .ph{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .prop .who{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;font-family:var(--mono);flex:none;}
+  .prop .nm{font-weight:600;font-size:13px;}
+  .prop .mv{font-family:var(--mono);font-size:11px;color:var(--text-2);background:var(--surface-3);padding:2px 7px;border-radius:5px;}
+  .prop .rsn{font-size:13px;color:var(--text);margin-top:7px;white-space:pre-wrap;}
+  .prop .pa{display:flex;gap:7px;margin-top:10px;}
+  .prop-empty{color:var(--muted);font-size:13px;}
+  @media (max-width:640px){.wrap{padding:14px 12px 44px;}.legend{display:none;}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="tile">F</div>
+      <div><h1>Roadmap Planner</h1><div class="sub">Fastlane · get-away</div></div>
+    </div>
+    <div class="spacer"></div>
+    <a class="navlink" href="index.html">← Input-board</a>
+    <span class="conn" id="conn"><span class="d"></span><span id="conn-txt">verbinden…</span></span>
+    <button class="icon-btn" id="theme-toggle" title="Licht / donker" aria-label="Licht of donker thema">🌙</button>
+    <div class="me-chip" id="me-chip" title="Klik om je naam te wijzigen"><span>als</span> <b id="me-name">…</b><span class="av" id="me-av"></span></div>
+  </div>
+
+  <p class="intro">Sleep de <b>idee-blokken</b> naar de maand waarin je ze wilt oppakken; de <b>kwartalen</b> staan als kop boven de maanden. Wil je een ander moment voorstellen? Klik <b>“Voorstel”</b> op een blok en geef aan <b>waarom</b> het daar beter past — iedereen ziet jouw voorstel met je naam. Nieuwe ideeën komen links in <b>“Nog inplannen”</b>, met vermelding van wie het toevoegde. Alles is live gedeeld.</p>
+
+  <div class="bar">
+    <input type="text" id="add-title" placeholder="Nieuw idee toevoegen…" maxlength="90">
+    <select id="add-theme">
+      <option value="ticketing">Ticketing</option>
+      <option value="cashless">Cashless</option>
+      <option value="backoffice">Backoffice / Organisator</option>
+      <option value="crew">Crew</option>
+      <option value="data">Data / CRM</option>
+      <option value="platform">Platform / AI</option>
+    </select>
+    <button class="btn" id="add-btn">+ Toevoegen</button>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div id="banner-slot"></div>
+
+  <div class="scroller"><div class="timeline" id="timeline"></div></div>
+
+  <p class="hint">Tip: slepen verplaatst een blok meteen (live voor iedereen). Gebruik “Voorstel” als je een ander moment wilt <em>aankaarten met een reden</em>; de eigenaar of iemand anders kan het dan overnemen of afwijzen. Klik ✎ om titel/thema aan te passen.</p>
+</div>
+
+<!-- edit idea -->
+<div class="overlay" id="edit-overlay" hidden><div class="modal">
+  <h3>Idee bewerken</h3>
+  <label class="lbl" for="edit-title">Titel</label>
+  <input type="text" id="edit-title" maxlength="90">
+  <label class="lbl" for="edit-theme">Thema</label>
+  <select id="edit-theme">
+    <option value="ticketing">Ticketing</option><option value="cashless">Cashless</option>
+    <option value="backoffice">Backoffice / Organisator</option><option value="crew">Crew</option>
+    <option value="data">Data / CRM</option><option value="platform">Platform / AI</option>
+  </select>
+  <div class="modal-acts"><button class="btn ghost" id="edit-cancel">Annuleren</button><button class="btn" id="edit-save">Opslaan</button></div>
+</div></div>
+
+<!-- propose month -->
+<div class="overlay" id="prop-overlay" hidden><div class="modal">
+  <h3>Ander moment voorstellen</h3>
+  <div class="msub" id="prop-for"></div>
+  <label class="lbl" for="prop-month">Voorgestelde maand / plek</label>
+  <select id="prop-month"></select>
+  <label class="lbl" for="prop-reason">Waarom past het daar beter?</label>
+  <textarea id="prop-reason" rows="3" placeholder="Bijv: hangt af van de settlement-migratie, dus pas daarna haalbaar."></textarea>
+  <div class="modal-acts"><button class="btn ghost" id="prop-cancel">Annuleren</button><button class="btn" id="prop-send">Voorstel versturen</button></div>
+</div></div>
+
+<!-- proposals list -->
+<div class="overlay" id="list-overlay" hidden><div class="modal">
+  <h3>Voorstellen</h3>
+  <div class="msub" id="list-for"></div>
+  <div class="prop-list" id="list-body"></div>
+  <div class="modal-acts"><button class="btn ghost" id="list-close">Sluiten</button></div>
+</div></div>
+
+<!-- name gate -->
+<div class="overlay gate" id="gate" hidden><div class="modal">
+  <h3>Wie ben je?</h3>
+  <p class="msub">Je naam komt bij de ideeën die je toevoegt en bij je voorstellen — zodat iedereen ziet wie wat inbracht. Geen login nodig. Gebruik steeds hetzelfde apparaat.</p>
+  <label class="lbl" for="gate-name">Je naam</label>
+  <input type="text" id="gate-name" placeholder="Voornaam is genoeg" maxlength="40" autocomplete="off">
+  <div class="modal-acts"><button class="btn" id="gate-go">Aan de slag</button></div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+  var SUPABASE_URL = "https://kchjrwyobxsmzmeseprl.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_J32SksOY8NkuO3IC13vgcA_1QP87LfM";
+  var LS_ME = "fl_roadmap_participant_v1";
+  var LS_THEME = "fl_roadmap_theme";
+
+  var THEMES = {
+    ticketing:{label:"Ticketing",cvar:"--t-ticketing"}, cashless:{label:"Cashless",cvar:"--t-cashless"},
+    backoffice:{label:"Backoffice",cvar:"--t-backoffice"}, crew:{label:"Crew",cvar:"--t-crew"},
+    data:{label:"Data / CRM",cvar:"--t-data"}, platform:{label:"Platform / AI",cvar:"--t-platform"}
+  };
+  var COLS = [
+    {id:"later",label:"Nog inplannen",q:"Nog inplannen",qn:"geen maand",wide:true,park:true},
+    {id:"m-2026-10",label:"okt '26",q:"Q4 2026",qn:"okt – dec"},
+    {id:"m-2026-11",label:"nov '26",q:"Q4 2026",qn:"okt – dec"},
+    {id:"m-2026-12",label:"dec '26",q:"Q4 2026",qn:"okt – dec"},
+    {id:"m-2027-01",label:"jan '27",q:"Q1 2027",qn:"jan – mrt"},
+    {id:"m-2027-02",label:"feb '27",q:"Q1 2027",qn:"jan – mrt"},
+    {id:"m-2027-03",label:"mrt '27",q:"Q1 2027",qn:"jan – mrt"},
+    {id:"m-2027-04",label:"apr '27",q:"Q2 2027",qn:"apr – jun"},
+    {id:"m-2027-05",label:"mei '27",q:"Q2 2027",qn:"apr – jun"},
+    {id:"m-2027-06",label:"jun '27",q:"Q2 2027",qn:"apr – jun"},
+    {id:"someday",label:"Someday / niet nu",q:"Parkeer",qn:"bewust (nog) niet",wide:true,park:true}
+  ];
+  function colLabel(id){ for(var i=0;i<COLS.length;i++) if(COLS[i].id===id) return COLS[i].label; return id; }
+
+  var $=function(s,r){return (r||document).querySelector(s);};
+  function esc(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML;}
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+  function initials(n){var p=(n||"?").trim().split(/\s+/);return ((p[0]||"?")[0]+(p[1]?p[1][0]:"")).toUpperCase();}
+  var PALETTE=["#446dff","#0e8fd6","#1a9e5b","#9b3fe0","#e07a12","#d6455f","#2aa39a","#c0842a"];
+  function colorFor(n){var h=0;n=n||"?";for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
+
+  // ---------- Supabase doc-store adapter ----------
+  function makeDb(){
+    if(!window.supabase||!window.supabase.createClient) return null;
+    var sb; try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }catch(e){ return null; }
+    function docRef(table,id){ return {
+      set:function(o){ return sb.from(table).upsert({id:id,data:o,updated_at:new Date().toISOString()}).then(function(r){ if(r.error) throw r.error; }); },
+      update:function(p){ return sb.from(table).select("data").eq("id",id).maybeSingle().then(function(r){ if(r.error) throw r.error; if(!r.data) throw new Error("not found"); var m=Object.assign({},r.data.data||{},p); return sb.from(table).update({data:m,updated_at:new Date().toISOString()}).eq("id",id).then(function(r2){ if(r2.error) throw r2.error; }); }); },
+      del:function(){ return sb.from(table).delete().eq("id",id).then(function(r){ if(r.error) throw r.error; }); }
+    };}
+    function coll(table){ return {
+      onSnapshot:function(cb){
+        var active=true,timer=null;
+        function load(){ sb.from(table).select("id,data").then(function(r){ if(!active||r.error) return; cb((r.data||[]).map(function(x){ var d=x.data||{}; d.id=x.id; return d; })); }); }
+        load();
+        try{ sb.channel("rt-"+table+"-"+Math.random().toString(36).slice(2)).on("postgres_changes",{event:"*",schema:"public",table:table},load).subscribe(); }catch(e){}
+        timer=setInterval(load,8000);
+        return function(){ active=false; if(timer) clearInterval(timer); };
+      }
+    };}
+    return { doc:function(t,id){return docRef(t,id);}, coll:function(t){return coll(t);} };
+  }
+
+  // ---------- state ----------
+  var db=null, me=null, started=false;
+  var items=new Map();   // id -> {id,t,th,col,ord,addedBy,addedPid,createdAt}
+  var proposals=[];      // {id,itemId,by,pid,fromCol,toCol,reason,createdAt}
+
+  // ---------- theme ----------
+  function currentTheme(){ var c=document.documentElement.getAttribute("data-theme"); if(c==="light"||c==="dark") return c; return (window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light"; }
+  function setTheme(t){ document.documentElement.setAttribute("data-theme",t); document.documentElement.style.colorScheme=t; var b=$("#theme-toggle"); if(b) b.textContent=(t==="dark")?"☀️":"🌙"; }
+  (function initTheme(){ var s=null; try{s=localStorage.getItem(LS_THEME);}catch(e){} if(s==="light"||s==="dark") setTheme(s); else { var b=$("#theme-toggle"); if(b) b.textContent=currentTheme()==="dark"?"☀️":"🌙"; }
+    $("#theme-toggle").addEventListener("click",function(){ var n=currentTheme()==="dark"?"light":"dark"; try{localStorage.setItem(LS_THEME,n);}catch(e){} setTheme(n); }); })();
+
+  // ---------- me / gate ----------
+  function setMe(name){ me={id:(me&&me.id)||uid(),name:name}; try{localStorage.setItem(LS_ME,JSON.stringify(me));}catch(e){} $("#me-name").textContent=me.name; var av=$("#me-av"); av.textContent=initials(me.name); av.style.background=colorFor(me.name); }
+  function showGate(prefill){ var g=$("#gate"); g.hidden=false; var i=$("#gate-name"); i.value=prefill||""; setTimeout(function(){i.focus();},40); }
+  function hideGate(){ $("#gate").hidden=true; }
+  $("#gate-go").addEventListener("click",function(){ var v=$("#gate-name").value.trim(); if(!v){$("#gate-name").focus();return;} var isNew=!me; setMe(v); hideGate(); if(!started) startData(); render(); });
+  $("#gate-name").addEventListener("keydown",function(e){ if(e.key==="Enter") $("#gate-go").click(); });
+  $("#me-chip").addEventListener("click",function(){ showGate(me?me.name:""); });
+
+  function setConn(state){ var c=$("#conn"),t=$("#conn-txt"); c.classList.remove("live","local"); if(state==="live"){c.classList.add("live");t.textContent="live · gedeeld";} else {c.classList.add("local");t.textContent="offline";} }
+
+  // ---------- render ----------
+  function render(){
+    if(!me) return;
+    var lg=$("#legend"); lg.innerHTML=""; Object.keys(THEMES).forEach(function(k){ var s=document.createElement("span"); s.className="li"; s.innerHTML='<span class="dot" style="background:var('+THEMES[k].cvar+')"></span>'+esc(THEMES[k].label); lg.appendChild(s); });
+    var tl=$("#timeline"); tl.innerHTML="";
+    var groups=[],cur=null;
+    COLS.forEach(function(c){ if(!cur||cur.q!==c.q){cur={q:c.q,qn:c.qn,park:!!c.park,cols:[]};groups.push(cur);} cur.cols.push(c); });
+    groups.forEach(function(g){
+      var gEl=document.createElement("div"); gEl.className="qgroup"+(g.park?" park":"");
+      var h=document.createElement("div"); h.className="qhead"; h.innerHTML='<span class="q">'+esc(g.q)+'</span><span class="qn">'+esc(g.qn)+'</span>'; gEl.appendChild(h);
+      var months=document.createElement("div"); months.className="months";
+      g.cols.forEach(function(c){
+        var col=document.createElement("div"); col.className="col"+(c.wide?" wide":""); col.setAttribute("data-col",c.id);
+        var list=[]; items.forEach(function(it){ if(it.col===c.id) list.push(it); });
+        list.sort(function(a,b){ return (a.ord||0)-(b.ord||0); });
+        var ch=document.createElement("div"); ch.className="ch"; ch.innerHTML='<span class="m">'+esc(c.label)+'</span><span class="cnt">'+list.length+'</span>'; col.appendChild(ch);
+        var drop=document.createElement("div"); drop.className="drop";
+        list.forEach(function(it){ drop.appendChild(cardEl(it)); });
+        col.appendChild(drop); wireDrop(col,c.id); months.appendChild(col);
+      });
+      gEl.appendChild(months); tl.appendChild(gEl);
+    });
+  }
+
+  function cardEl(it){
+    var card=document.createElement("div"); card.className="card"; card.draggable=true; card.setAttribute("data-id",it.id);
+    card.style.setProperty("--tc","var("+(THEMES[it.th]?THEMES[it.th].cvar:"--muted")+")");
+    var nProp=proposals.filter(function(p){return p.itemId===it.id;}).length;
+    var html='<div class="t">'+esc(it.t)+'</div><div class="meta">';
+    html+='<span class="th">'+esc(THEMES[it.th]?THEMES[it.th].label:it.th)+'</span>';
+    if(it.addedBy) html+='<span class="by">door <b>'+esc(it.addedBy)+'</b></span>';
+    html+='</div><div class="meta">';
+    html+='<button class="propose" data-act="propose">+ Voorstel</button>';
+    if(nProp) html+='<button class="prop-chip has" data-act="list">📌 '+nProp+' voorstel'+(nProp===1?"":"len")+'</button>';
+    html+='</div>';
+    html+='<div class="acts"><button class="edit" data-act="edit" title="Bewerken">✎</button><button class="del" data-act="del" title="Verwijderen">×</button></div>';
+    card.innerHTML=html;
+    card.addEventListener("dragstart",function(e){ card.classList.add("dragging"); e.dataTransfer.setData("text/plain",it.id); e.dataTransfer.effectAllowed="move"; });
+    card.addEventListener("dragend",function(){ card.classList.remove("dragging"); });
+    card.addEventListener("click",function(e){ var b=e.target.closest("[data-act]"); if(!b) return; var a=b.getAttribute("data-act");
+      if(a==="edit") openEdit(it.id);
+      else if(a==="del"){ if(confirm("“"+it.t+"” verwijderen?")) delItem(it.id); }
+      else if(a==="propose") openPropose(it.id);
+      else if(a==="list") openList(it.id);
+    });
+    card.addEventListener("dblclick",function(){ openEdit(it.id); });
+    return card;
+  }
+
+  function wireDrop(el,colId){
+    el.addEventListener("dragover",function(e){ e.preventDefault(); e.dataTransfer.dropEffect="move"; el.classList.add("drag-over"); });
+    el.addEventListener("dragleave",function(e){ if(!el.contains(e.relatedTarget)) el.classList.remove("drag-over"); });
+    el.addEventListener("drop",function(e){ e.preventDefault(); el.classList.remove("drag-over");
+      var id=e.dataTransfer.getData("text/plain"); var it=items.get(id);
+      if(it&&it.col!==colId){ it.col=colId; render(); if(db) db.doc("plan_items",id).update({col:colId}).catch(function(){}); }
+    });
+  }
+
+  // ---------- writes ----------
+  function addItem(){
+    var t=$("#add-title").value.trim(); if(!t){$("#add-title").focus();return;}
+    if(!me){ showGate(); return; }
+    var id="u-"+uid();
+    var body={t:t,th:$("#add-theme").value,col:"later",ord:Date.now(),addedBy:me.name,addedPid:me.id,createdAt:Date.now()};
+    items.set(id,Object.assign({id:id},body)); render();
+    $("#add-title").value="";
+    if(db) db.doc("plan_items",id).set(body).catch(function(e){ alert("Opslaan mislukt: "+e.message); });
+  }
+  function delItem(id){
+    items.delete(id); proposals=proposals.filter(function(p){return p.itemId!==id;}); render();
+    if(db){ db.doc("plan_items",id).del(); proposals.forEach(function(){}); // proposals for item removed below on snapshot
+      // delete its proposals in db
+      itemProposalIds(id).forEach(function(pid){ db.doc("plan_proposals",pid).del(); });
+    }
+  }
+  function itemProposalIds(itemId){ return proposals.filter(function(p){return p.itemId===itemId;}).map(function(p){return p.id;}); }
+
+  // ---------- edit modal ----------
+  var editId=null, editOv=$("#edit-overlay");
+  function openEdit(id){ var it=items.get(id); if(!it) return; editId=id; $("#edit-title").value=it.t; $("#edit-theme").value=it.th; editOv.hidden=false; setTimeout(function(){var e=$("#edit-title");e.focus();e.select();},30); }
+  function closeEdit(){ editOv.hidden=true; editId=null; }
+  $("#edit-save").addEventListener("click",function(){ var it=items.get(editId); if(!it){closeEdit();return;} var v=$("#edit-title").value.trim(); if(!v){$("#edit-title").focus();return;} it.t=v; it.th=$("#edit-theme").value; render(); if(db) db.doc("plan_items",editId).update({t:it.t,th:it.th}).catch(function(){}); closeEdit(); });
+  $("#edit-cancel").addEventListener("click",closeEdit);
+  editOv.addEventListener("click",function(e){ if(e.target===editOv) closeEdit(); });
+
+  // ---------- propose modal ----------
+  var propId=null, propOv=$("#prop-overlay");
+  function openPropose(id){ var it=items.get(id); if(!it) return; if(!me){ showGate(); return; } propId=id;
+    $("#prop-for").textContent="Voor: “"+it.t+"” (nu: "+colLabel(it.col)+")";
+    var sel=$("#prop-month"); sel.innerHTML=""; COLS.forEach(function(c){ var o=document.createElement("option"); o.value=c.id; o.textContent=c.label; if(c.id===it.col) o.selected=true; sel.appendChild(o); });
+    $("#prop-reason").value=""; propOv.hidden=false; setTimeout(function(){$("#prop-month").focus();},30);
+  }
+  function closePropose(){ propOv.hidden=true; propId=null; }
+  $("#prop-send").addEventListener("click",function(){
+    var it=items.get(propId); if(!it){closePropose();return;}
+    var toCol=$("#prop-month").value; var reason=$("#prop-reason").value.trim();
+    if(!reason){ $("#prop-reason").focus(); return; }
+    var pid="p-"+uid();
+    var body={itemId:propId,by:me.name,pid:me.id,fromCol:it.col,toCol:toCol,reason:reason,createdAt:Date.now()};
+    proposals.push(Object.assign({id:pid},body)); render();
+    if(db) db.doc("plan_proposals",pid).set(body).catch(function(e){ alert("Mislukt: "+e.message); });
+    closePropose();
+  });
+  $("#prop-cancel").addEventListener("click",closePropose);
+  propOv.addEventListener("click",function(e){ if(e.target===propOv) closePropose(); });
+
+  // ---------- proposals list modal ----------
+  var listId=null, listOv=$("#list-overlay");
+  function openList(id){ listId=id; renderList(); listOv.hidden=false; }
+  function closeList(){ listOv.hidden=true; listId=null; }
+  function renderList(){
+    var it=items.get(listId); if(!it){ closeList(); return; }
+    $("#list-for").textContent="Voor: “"+it.t+"” — nu ingepland in "+colLabel(it.col);
+    var body=$("#list-body"); body.innerHTML="";
+    var ps=proposals.filter(function(p){return p.itemId===listId;}).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+    if(!ps.length){ body.innerHTML='<div class="prop-empty">Nog geen voorstellen.</div>'; return; }
+    ps.forEach(function(p){
+      var el=document.createElement("div"); el.className="prop";
+      el.innerHTML='<div class="ph"><span class="who" style="background:'+colorFor(p.by)+'">'+esc(initials(p.by))+'</span>'+
+        '<span class="nm">'+esc(p.by)+'</span><span class="mv">'+esc(colLabel(p.fromCol))+' → '+esc(colLabel(p.toCol))+'</span></div>'+
+        '<div class="rsn">'+esc(p.reason)+'</div>'+
+        '<div class="pa"><button class="btn sm" data-ov="'+esc(p.id)+'">Overnemen → '+esc(colLabel(p.toCol))+'</button>'+
+        '<button class="btn ghost sm" data-rj="'+esc(p.id)+'">Afwijzen</button></div>';
+      body.appendChild(el);
+    });
+  }
+  listOv.addEventListener("click",function(e){
+    if(e.target===listOv){ closeList(); return; }
+    var ov=e.target.closest("[data-ov]"), rj=e.target.closest("[data-rj]");
+    if(ov){ var pid=ov.getAttribute("data-ov"); var p=proposals.filter(function(x){return x.id===pid;})[0]; if(p){ var it=items.get(p.itemId); if(it){ it.col=p.toCol; if(db) db.doc("plan_items",it.id).update({col:p.toCol}).catch(function(){}); } removeProposal(pid); } render(); renderList(); }
+    else if(rj){ removeProposal(rj.getAttribute("data-rj")); render(); renderList(); }
+  });
+  $("#list-close").addEventListener("click",closeList);
+  function removeProposal(pid){ proposals=proposals.filter(function(x){return x.id!==pid;}); if(db) db.doc("plan_proposals",pid).del(); }
+
+  document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return;
+    if(!editOv.hidden) closeEdit(); else if(!propOv.hidden) closePropose(); else if(!listOv.hidden) closeList();
+  });
+
+  // ---------- add wiring ----------
+  $("#add-btn").addEventListener("click",addItem);
+  $("#add-title").addEventListener("keydown",function(e){ if(e.key==="Enter") addItem(); });
+
+  // ---------- data ----------
+  function startData(){
+    if(started||!db) return; started=true;
+    db.coll("plan_items").onSnapshot(function(rows){ items=new Map(); rows.forEach(function(r){ items.set(r.id,r); }); render(); });
+    db.coll("plan_proposals").onSnapshot(function(rows){ proposals=rows; render(); if(!listOv.hidden) renderList(); });
+  }
+
+  function boot(){
+    try{ var raw=localStorage.getItem(LS_ME); if(raw) me=JSON.parse(raw); }catch(e){}
+    if(me&&me.name) setMe(me.name);
+    db=makeDb();
+    if(!db){ setConn("local"); $("#banner-slot").innerHTML='<div class="banner">Kan niet verbinden met de live-opslag. Je ziet mogelijk niets of niet-gedeelde data. Open de pagina via de gedeelde link in een gewone browser.</div>'; if(!me||!me.name) showGate(); return; }
+    setConn("live");
+    if(me&&me.name) startData(); else showGate();
+  }
+  boot();
+})();
+</script>
