@@ -133,6 +133,8 @@
   .prop .rsn{font-size:13px;color:var(--text);margin-top:7px;white-space:pre-wrap;}
   .prop .pa{display:flex;gap:7px;margin-top:10px;}
   .prop-empty{color:var(--muted);font-size:13px;}
+  .prop .pitem{font-weight:700;font-size:12.5px;margin-bottom:6px;color:var(--text);}
+  #all-props.has{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
   @media (max-width:640px){.wrap{padding:14px 12px 44px;}.legend{display:none;}}
 </style>
 
@@ -149,7 +151,7 @@
     <div class="me-chip" id="me-chip" title="Klik om je naam te wijzigen"><span>als</span> <b id="me-name">…</b><span class="av" id="me-av"></span></div>
   </div>
 
-  <p class="intro">Sleep de <b>idee-blokken</b> naar de maand waarin je ze wilt oppakken; de <b>kwartalen</b> staan als kop boven de maanden. Wil je een ander moment voorstellen? Klik <b>“Voorstel”</b> op een blok en geef aan <b>waarom</b> het daar beter past — iedereen ziet jouw voorstel met je naam. Nieuwe ideeën komen links in <b>“Nog inplannen”</b>, met vermelding van wie het toevoegde. Alles is live gedeeld.</p>
+  <p class="intro">Elk <b>idee-blok</b> hoort bij een maand; de <b>kwartalen</b> staan als kop erboven. Wil je iets op een ander moment? <b>Sleep het blok naar die maand</b> (of klik “+ Voorstel”) en geef aan <b>waarom</b> — dat wordt een <b>voorstel</b> met je naam dat iedereen ziet. Alleen de eigenaar verplaatst blokken definitief, door een voorstel over te nemen. Nieuwe ideeën komen links in <b>“Nog inplannen”</b>, met vermelding van wie ze toevoegde. Alles is live gedeeld.</p>
 
   <div class="bar">
     <input type="text" id="add-title" placeholder="Nieuw idee toevoegen…" maxlength="90">
@@ -162,6 +164,7 @@
       <option value="platform">Platform / AI</option>
     </select>
     <button class="btn" id="add-btn">+ Toevoegen</button>
+    <button class="btn ghost" id="all-props">📌 Voorstellen (<span id="all-props-n">0</span>)</button>
     <div class="legend" id="legend"></div>
   </div>
 
@@ -169,7 +172,7 @@
 
   <div class="scroller"><div class="timeline" id="timeline"></div></div>
 
-  <p class="hint">Tip: slepen verplaatst een blok meteen (live voor iedereen). Gebruik “Voorstel” als je een ander moment wilt <em>aankaarten met een reden</em>; de eigenaar of iemand anders kan het dan overnemen of afwijzen. Klik ✎ om titel/thema aan te passen.</p>
+  <p class="hint">Tip: bekijk alle ingediende voorstellen via <b>“📌 Voorstellen”</b> bovenin. De eigenaar neemt een voorstel over (verplaatst het blok) of wijst het af; je kunt je eigen voorstel intrekken. Klik ✎ om titel/thema aan te passen.</p>
 </div>
 
 <!-- edit idea -->
@@ -197,12 +200,20 @@
   <div class="modal-acts"><button class="btn ghost" id="prop-cancel">Annuleren</button><button class="btn" id="prop-send">Voorstel versturen</button></div>
 </div></div>
 
-<!-- proposals list -->
+<!-- proposals list (per item) -->
 <div class="overlay" id="list-overlay" hidden><div class="modal">
   <h3>Voorstellen</h3>
   <div class="msub" id="list-for"></div>
   <div class="prop-list" id="list-body"></div>
   <div class="modal-acts"><button class="btn ghost" id="list-close">Sluiten</button></div>
+</div></div>
+
+<!-- all proposals overview -->
+<div class="overlay" id="allprops-overlay" hidden><div class="modal" style="max-width:560px;">
+  <h3>Alle voorstellen</h3>
+  <div class="msub" id="allprops-sub"></div>
+  <div class="prop-list" id="allprops-body"></div>
+  <div class="modal-acts"><button class="btn ghost" id="allprops-close">Sluiten</button></div>
 </div></div>
 
 <!-- name gate -->
@@ -317,6 +328,7 @@
       });
       gEl.appendChild(months); tl.appendChild(gEl);
     });
+    var np=proposals.length; var b=$("#all-props-n"); if(b) b.textContent=np; var ab=$("#all-props"); if(ab) ab.classList.toggle("has", np>0);
   }
 
   function cardEl(it){
@@ -349,7 +361,9 @@
     el.addEventListener("dragleave",function(e){ if(!el.contains(e.relatedTarget)) el.classList.remove("drag-over"); });
     el.addEventListener("drop",function(e){ e.preventDefault(); el.classList.remove("drag-over");
       var id=e.dataTransfer.getData("text/plain"); var it=items.get(id);
-      if(it&&it.col!==colId){ it.col=colId; render(); if(db) db.doc("plan_items",id).update({col:colId}).catch(function(){}); }
+      if(!it||it.col===colId) return;
+      if(isOwner()){ it.col=colId; render(); if(db) db.doc("plan_items",id).update({col:colId}).catch(function(){}); }
+      else { openPropose(id, colId); } // niet-eigenaar: slepen wordt een voorstel voor die maand
     });
   }
 
@@ -383,10 +397,12 @@
 
   // ---------- propose modal ----------
   var propId=null, propOv=$("#prop-overlay");
-  function openPropose(id){ var it=items.get(id); if(!it) return; if(!me){ showGate(); return; } propId=id;
-    $("#prop-for").textContent="Voor: “"+it.t+"” (nu: "+colLabel(it.col)+")";
-    var sel=$("#prop-month"); sel.innerHTML=""; COLS.forEach(function(c){ var o=document.createElement("option"); o.value=c.id; o.textContent=c.label; if(c.id===it.col) o.selected=true; sel.appendChild(o); });
-    $("#prop-reason").value=""; propOv.hidden=false; setTimeout(function(){$("#prop-month").focus();},30);
+  function openPropose(id, presetCol){ var it=items.get(id); if(!it) return; if(!me){ showGate(); return; } propId=id;
+    var target = presetCol || it.col;
+    $("#prop-for").textContent="Voor: “"+it.t+"” — nu in "+colLabel(it.col);
+    var sel=$("#prop-month"); sel.innerHTML=""; COLS.forEach(function(c){ var o=document.createElement("option"); o.value=c.id; o.textContent=c.label; if(c.id===target) o.selected=true; sel.appendChild(o); });
+    $("#prop-reason").value=""; propOv.hidden=false;
+    setTimeout(function(){ (presetCol ? $("#prop-reason") : $("#prop-month")).focus(); },30);
   }
   function closePropose(){ propOv.hidden=true; propId=null; }
   $("#prop-send").addEventListener("click",function(){
@@ -402,37 +418,55 @@
   $("#prop-cancel").addEventListener("click",closePropose);
   propOv.addEventListener("click",function(e){ if(e.target===propOv) closePropose(); });
 
-  // ---------- proposals list modal ----------
-  var listId=null, listOv=$("#list-overlay");
+  // ---------- proposals: per-item list + global overview ----------
+  var listId=null, listOv=$("#list-overlay"), allOv=$("#allprops-overlay");
+  function canApply(){ return isOwner(); }
+  function canReject(p){ return isOwner() || (me && p.pid===me.id); }
+  function propRow(p, withItem){
+    var it=items.get(p.itemId);
+    var h='<div class="prop">';
+    if(withItem) h+='<div class="pitem">'+esc(it?it.t:"(verwijderd)")+'</div>';
+    h+='<div class="ph"><span class="who" style="background:'+colorFor(p.by)+'">'+esc(initials(p.by))+'</span>'+
+       '<span class="nm">'+esc(p.by)+'</span><span class="mv">'+esc(colLabel(p.fromCol))+' → '+esc(colLabel(p.toCol))+'</span></div>'+
+       '<div class="rsn">'+esc(p.reason)+'</div><div class="pa">';
+    if(canApply()) h+='<button class="btn sm" data-ov="'+esc(p.id)+'">Overnemen → '+esc(colLabel(p.toCol))+'</button>';
+    if(canReject(p)) h+='<button class="btn ghost sm" data-rj="'+esc(p.id)+'">'+(isOwner()?"Afwijzen":"Intrekken")+'</button>';
+    h+='</div></div>';
+    return h;
+  }
   function openList(id){ listId=id; renderList(); listOv.hidden=false; }
   function closeList(){ listOv.hidden=true; listId=null; }
   function renderList(){
     var it=items.get(listId); if(!it){ closeList(); return; }
     $("#list-for").textContent="Voor: “"+it.t+"” — nu ingepland in "+colLabel(it.col);
-    var body=$("#list-body"); body.innerHTML="";
     var ps=proposals.filter(function(p){return p.itemId===listId;}).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
-    if(!ps.length){ body.innerHTML='<div class="prop-empty">Nog geen voorstellen.</div>'; return; }
-    ps.forEach(function(p){
-      var el=document.createElement("div"); el.className="prop";
-      el.innerHTML='<div class="ph"><span class="who" style="background:'+colorFor(p.by)+'">'+esc(initials(p.by))+'</span>'+
-        '<span class="nm">'+esc(p.by)+'</span><span class="mv">'+esc(colLabel(p.fromCol))+' → '+esc(colLabel(p.toCol))+'</span></div>'+
-        '<div class="rsn">'+esc(p.reason)+'</div>'+
-        '<div class="pa"><button class="btn sm" data-ov="'+esc(p.id)+'">Overnemen → '+esc(colLabel(p.toCol))+'</button>'+
-        '<button class="btn ghost sm" data-rj="'+esc(p.id)+'">Afwijzen</button></div>';
-      body.appendChild(el);
-    });
+    $("#list-body").innerHTML = ps.length ? ps.map(function(p){return propRow(p,false);}).join("") : '<div class="prop-empty">Nog geen voorstellen.</div>';
   }
-  listOv.addEventListener("click",function(e){
-    if(e.target===listOv){ closeList(); return; }
-    var ov=e.target.closest("[data-ov]"), rj=e.target.closest("[data-rj]");
-    if(ov){ var pid=ov.getAttribute("data-ov"); var p=proposals.filter(function(x){return x.id===pid;})[0]; if(p){ var it=items.get(p.itemId); if(it){ it.col=p.toCol; if(db) db.doc("plan_items",it.id).update({col:p.toCol}).catch(function(){}); } removeProposal(pid); } render(); renderList(); }
-    else if(rj){ removeProposal(rj.getAttribute("data-rj")); render(); renderList(); }
-  });
-  $("#list-close").addEventListener("click",closeList);
+  function openAll(){ renderAllProps(); allOv.hidden=false; }
+  function closeAll(){ allOv.hidden=true; }
+  function renderAllProps(){
+    var ps=proposals.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+    $("#allprops-sub").textContent = ps.length ? (ps.length+" openstaand"+(ps.length===1?"":"e")+" voorstel"+(ps.length===1?"":"len")) : "";
+    $("#allprops-body").innerHTML = ps.length ? ps.map(function(p){return propRow(p,true);}).join("") : '<div class="prop-empty">Nog geen voorstellen. Sleep een blok naar een andere maand om er een te doen.</div>';
+  }
   function removeProposal(pid){ proposals=proposals.filter(function(x){return x.id!==pid;}); if(db) db.doc("plan_proposals",pid).del(); }
+  function applyProposal(pid){ if(!canApply()) return; var p=proposals.filter(function(x){return x.id===pid;})[0]; if(p){ var it=items.get(p.itemId); if(it){ it.col=p.toCol; if(db) db.doc("plan_items",it.id).update({col:p.toCol}).catch(function(){}); } removeProposal(pid); } refreshProps(); }
+  function rejectProposal(pid){ var p=proposals.filter(function(x){return x.id===pid;})[0]; if(!p||!canReject(p)) return; removeProposal(pid); refreshProps(); }
+  function refreshProps(){ render(); if(!listOv.hidden) renderList(); if(!allOv.hidden) renderAllProps(); }
+  function propClick(e, bgEl){
+    if(e.target===bgEl){ bgEl.hidden=true; return; }
+    var ov=e.target.closest("[data-ov]"), rj=e.target.closest("[data-rj]");
+    if(ov) applyProposal(ov.getAttribute("data-ov"));
+    else if(rj) rejectProposal(rj.getAttribute("data-rj"));
+  }
+  listOv.addEventListener("click",function(e){ propClick(e,listOv); });
+  allOv.addEventListener("click",function(e){ propClick(e,allOv); });
+  $("#list-close").addEventListener("click",closeList);
+  $("#allprops-close").addEventListener("click",closeAll);
+  $("#all-props").addEventListener("click",openAll);
 
   document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return;
-    if(!editOv.hidden) closeEdit(); else if(!propOv.hidden) closePropose(); else if(!listOv.hidden) closeList();
+    if(!editOv.hidden) closeEdit(); else if(!propOv.hidden) closePropose(); else if(!listOv.hidden) closeList(); else if(!allOv.hidden) closeAll();
   });
 
   // ---------- add wiring ----------
