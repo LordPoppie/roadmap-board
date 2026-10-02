@@ -274,6 +274,8 @@
 
   // ---------- state ----------
   var db=null, me=null, started=false;
+  var OWNER="Killian"; // alleen deze persoon mag verwijderen
+  function isOwner(){ return !!(me && me.name && me.name.trim().toLowerCase()===OWNER.toLowerCase()); }
   var items=new Map();   // id -> {id,t,th,col,ord,addedBy,addedPid,createdAt}
   var proposals=[];      // {id,itemId,by,pid,fromCol,toCol,reason,createdAt}
 
@@ -328,7 +330,7 @@
     html+='<button class="propose" data-act="propose">+ Voorstel</button>';
     if(nProp) html+='<button class="prop-chip has" data-act="list">📌 '+nProp+' voorstel'+(nProp===1?"":"len")+'</button>';
     html+='</div>';
-    html+='<div class="acts"><button class="edit" data-act="edit" title="Bewerken">✎</button><button class="del" data-act="del" title="Verwijderen">×</button></div>';
+    html+='<div class="acts"><button class="edit" data-act="edit" title="Bewerken">✎</button>'+(isOwner()?'<button class="del" data-act="del" title="Verwijderen">×</button>':'')+'</div>';
     card.innerHTML=html;
     card.addEventListener("dragstart",function(e){ card.classList.add("dragging"); e.dataTransfer.setData("text/plain",it.id); e.dataTransfer.effectAllowed="move"; });
     card.addEventListener("dragend",function(){ card.classList.remove("dragging"); });
@@ -362,6 +364,7 @@
     if(db) db.doc("plan_items",id).set(body).catch(function(e){ alert("Opslaan mislukt: "+e.message); });
   }
   function delItem(id){
+    if(!isOwner()) return;
     items.delete(id); proposals=proposals.filter(function(p){return p.itemId!==id;}); render();
     if(db){ db.doc("plan_items",id).del(); proposals.forEach(function(){}); // proposals for item removed below on snapshot
       // delete its proposals in db
